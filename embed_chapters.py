@@ -8,6 +8,7 @@ as Ogg Vorbis-comment CHAPTERxxx/CHAPTERxxxNAME tags (read by ffmpeg/mpv/VLC/foo
 import argparse
 import os
 import subprocess
+from urllib.parse import unquote, urlsplit
 from mutagen.oggopus import OggOpus
 
 from podcast_extract import parse
@@ -60,7 +61,8 @@ def run(feed_path, outdir, match=None, rate=DEFAULT_RATE, artist=None, verbose=F
     for ep in episodes:
         if not ep["url"] or not ep["chapters"]:
             continue
-        dest = os.path.join(outdir, os.path.basename(ep["url"]))
+        # wget decodes %-escapes when naming the saved file, so match that here.
+        dest = os.path.join(outdir, unquote(os.path.basename(urlsplit(ep["url"]).path)))
         download(ep["url"], outdir, rate, verbose)
         embed(dest, ep)
         print(f"embedded {len(ep['chapters'])} chapters -> {dest}")
