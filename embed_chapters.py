@@ -46,11 +46,14 @@ def embed(path, ep):
     f.save()
 
 
-def run(feed_path, outdir, match=None, rate=DEFAULT_RATE):
+def run(feed_path, outdir, match=None, rate=DEFAULT_RATE, artist=None):
     os.makedirs(outdir, exist_ok=True)
     episodes = parse(feed_path)
     if match:
         episodes = [e for e in episodes if match.lower() in e["title"].lower()]
+    if artist:
+        for e in episodes:
+            e["artist"] = artist
     for ep in episodes:
         if not ep["url"] or not ep["chapters"]:
             continue
@@ -92,12 +95,13 @@ if __name__ == "__main__":
         demo()
         sys.exit(0)
     if len(sys.argv) < 2:
-        print("usage: embed_chapters.py <podcast.xml> [outdir] [--match SUBSTR] [--rate RATE]", file=sys.stderr)
+        print("usage: embed_chapters.py <podcast.xml|feed URL> [outdir] [--match SUBSTR] [--rate RATE] [--artist NAME]", file=sys.stderr)
         sys.exit(1)
     feed = sys.argv[1]
     outdir = "episodes"
     match = None
     rate = DEFAULT_RATE
+    artist = None
     rest = sys.argv[2:]
     if rest and not rest[0].startswith("--"):
         outdir = rest.pop(0)
@@ -105,4 +109,6 @@ if __name__ == "__main__":
         match = rest[rest.index("--match") + 1]
     if "--rate" in rest:
         rate = rest[rest.index("--rate") + 1]
-    run(feed, outdir, match, rate)
+    if "--artist" in rest:
+        artist = rest[rest.index("--artist") + 1]
+    run(feed, outdir, match, rate, artist)

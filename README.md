@@ -11,11 +11,14 @@ optionally embed those chapters into the downloaded Opus files.
 ## Usage
 
 ```
-# feed can be a local path or a URL
-uv run podcast_extract.py podcast.xml            # dump episodes+chapters as JSON
+# <feed> is a local path or a URL
+uv run podcast_extract.py <podcast.xml|feed URL> # dump episodes+chapters as JSON
 
-uv run embed_chapters.py podcast.xml [outdir] [--match SUBSTR] [--rate 1m]
+uv run embed_chapters.py <podcast.xml|feed URL> outdir] [--match SUBSTR] [--rate 1m] [--artist NAME]
 ```
+
+`--artist` overrides the artist tag; by default it's taken from the feed's
+`itunes:author`.
 
 `embed_chapters.py` downloads each episode with `wget` (rate-limited,
 resumable, skips up-to-date files, re-fetches ones the server updated) and

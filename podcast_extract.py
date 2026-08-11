@@ -69,7 +69,7 @@ def demo():
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
-        print("usage: podcast_extract.py <podcast.xml> [--demo]", file=sys.stderr)
+        print("usage: podcast_extract.py <podcast.xml|feed URL> [--demo]", file=sys.stderr)
         sys.exit(1)
     if sys.argv[1] == "--demo":
         demo()
