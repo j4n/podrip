@@ -5,9 +5,9 @@
 """Download episodes from a podcast RSS feed and embed their Podlove chapters
 as Ogg Vorbis-comment CHAPTERxxx/CHAPTERxxxNAME tags (read by ffmpeg/mpv/VLC/foobar2000).
 """
+import argparse
 import os
 import subprocess
-import sys
 from mutagen.oggopus import OggOpus
 
 from podcast_extract import parse
@@ -24,12 +24,12 @@ def chapter_tags(chapters):
     return tags
 
 
-def download(url, outdir, rate):
+def download(url, outdir, rate, verbose=False):
     # -c resumes partial files; -N (timestamping) skips up-to-date files and
     # re-fetches ones the server has updated. Needs wget to name the file
     # itself (-P dir) since -N doesn't work together with -O.
     subprocess.run(
-        ["wget", "-nv", "-c", "-N", "--limit-rate", rate,
+        ["wget", "-nv" if not verbose else "-v", "-c", "-N", "--limit-rate", rate,
          "--user-agent", "AntennaPod/4.2.3", "-P", outdir, url],
         check=True,
     )
@@ -49,7 +49,7 @@ def embed(path, ep):
     f.save()
 
 
-def run(feed_path, outdir, match=None, rate=DEFAULT_RATE, artist=None):
+def run(feed_path, outdir, match=None, rate=DEFAULT_RATE, artist=None, verbose=False):
     os.makedirs(outdir, exist_ok=True)
     episodes = parse(feed_path)
     if match:
@@ -61,7 +61,7 @@ def run(feed_path, outdir, match=None, rate=DEFAULT_RATE, artist=None):
         if not ep["url"] or not ep["chapters"]:
             continue
         dest = os.path.join(outdir, os.path.basename(ep["url"]))
-        download(ep["url"], outdir, rate)
+        download(ep["url"], outdir, rate, verbose)
         embed(dest, ep)
         print(f"embedded {len(ep['chapters'])} chapters -> {dest}")
 
@@ -94,24 +94,19 @@ def demo():
 
 
 if __name__ == "__main__":
-    if len(sys.argv) > 1 and sys.argv[1] == "--demo":
+    ap = argparse.ArgumentParser(description=__doc__)
+    ap.add_argument("feed", nargs="?", help="local path or URL to podcast.xml")
+    ap.add_argument("outdir", nargs="?", default="episodes", help="download directory (default: episodes)")
+    ap.add_argument("--match", help="only episodes whose title contains this substring")
+    ap.add_argument("--rate", default=DEFAULT_RATE, help="wget --limit-rate (default: %(default)s)")
+    ap.add_argument("--artist", help="override the ARTIST tag (default: feed's itunes:author)")
+    ap.add_argument("-v", "--verbose", action="store_true", help="show wget's normal progress output")
+    ap.add_argument("--demo", action="store_true", help="run self-check and exit")
+    args = ap.parse_args()
+
+    if args.demo:
         demo()
-        sys.exit(0)
-    if len(sys.argv) < 2:
-        print("usage: embed_chapters.py <podcast.xml|feed URL> [outdir] [--match SUBSTR] [--rate RATE] [--artist NAME]", file=sys.stderr)
-        sys.exit(1)
-    feed = sys.argv[1]
-    outdir = "episodes"
-    match = None
-    rate = DEFAULT_RATE
-    artist = None
-    rest = sys.argv[2:]
-    if rest and not rest[0].startswith("--"):
-        outdir = rest.pop(0)
-    if "--match" in rest:
-        match = rest[rest.index("--match") + 1]
-    if "--rate" in rest:
-        rate = rest[rest.index("--rate") + 1]
-    if "--artist" in rest:
-        artist = rest[rest.index("--artist") + 1]
-    run(feed, outdir, match, rate, artist)
+    elif not args.feed:
+        ap.error("feed is required (or pass --demo)")
+    else:
+        run(args.feed, args.outdir, args.match, args.rate, args.artist, args.verbose)

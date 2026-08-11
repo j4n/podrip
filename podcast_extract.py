@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Extract episode URLs and chapters from a Podlove-chaptered podcast RSS feed."""
+import argparse
 import json
 import sys
 import urllib.request
@@ -68,10 +69,19 @@ def demo():
 
 
 if __name__ == "__main__":
-    if len(sys.argv) < 2:
-        print("usage: podcast_extract.py <podcast.xml|feed URL> [--demo]", file=sys.stderr)
-        sys.exit(1)
-    if sys.argv[1] == "--demo":
+    ap = argparse.ArgumentParser(description=__doc__)
+    ap.add_argument("feed", nargs="?", help="local path or URL to podcast.xml")
+    ap.add_argument("-v", "--verbose", action="store_true", help="print episode/chapter counts to stderr")
+    ap.add_argument("--demo", action="store_true", help="run self-check and exit")
+    args = ap.parse_args()
+
+    if args.demo:
         demo()
+    elif not args.feed:
+        ap.error("feed is required (or pass --demo)")
     else:
-        print(json.dumps(parse(sys.argv[1]), indent=2, ensure_ascii=False))
+        episodes = parse(args.feed)
+        if args.verbose:
+            print(f"{len(episodes)} episodes, {sum(len(e['chapters']) for e in episodes)} chapters",
+                  file=sys.stderr)
+        print(json.dumps(episodes, indent=2, ensure_ascii=False))
