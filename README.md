@@ -3,6 +3,14 @@
 Extract episode URLs/chapters from a Podlove-chaptered podcast RSS feed, and
 optionally embed those chapters into the downloaded Opus files.
 
+Two scripts, split by responsibility:
+
+- **`podcast_extract.py`** - parses the feed into JSON. No downloads, no
+  extra deps beyond the stdlib.
+- **`embed_chapters.py`** - imports `parse()` from the above, then downloads
+  each episode and writes the chapters into the file. Needs `wget` and
+  `mutagen`.
+
 ## Requirements
 
 - `wget`
@@ -16,7 +24,7 @@ optionally embed those chapters into the downloaded Opus files.
 # <feed> is a local path or a URL
 uv run podcast_extract.py <podcast.xml|feed URL> # dump episodes+chapters as JSON
 
-uv run embed_chapters.py <podcast.xml|feed URL> outdir] [--match SUBSTR] [--rate 1m] [--artist NAME]
+uv run embed_chapters.py <podcast.xml|feed URL> [outdir] [--match SUBSTR] [--rate 1m] [--artist NAME]
 ```
 
 `--artist` overrides the artist tag; by default it's taken from the feed's
