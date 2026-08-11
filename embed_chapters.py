@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# /// script
+# dependencies = ["mutagen"]
+# ///
 """Download episodes from a podcast RSS feed and embed their Podlove chapters
 as Ogg Vorbis-comment CHAPTERxxx/CHAPTERxxxNAME tags (read by ffmpeg/mpv/VLC/foobar2000).
 """

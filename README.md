@@ -6,7 +6,9 @@ optionally embed those chapters into the downloaded Opus files.
 ## Requirements
 
 - `wget`
-- the `mutagen` Python package - on Debian 13: `sudo apt install python3-mutagen`
+- the `mutagen` Python package - `embed_chapters.py` carries a PEP 723 header
+  so `uv run` installs it automatically; without uv, on Debian 13:
+  `sudo apt install python3-mutagen`
 
 ## Usage
 
