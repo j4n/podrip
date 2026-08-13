@@ -59,11 +59,14 @@ def run(feed_path, outdir, match=None, rate=DEFAULT_RATE, artist=None, verbose=F
         for e in episodes:
             e["artist"] = artist
     for ep in episodes:
-        if not ep["url"] or not ep["chapters"]:
+        if not ep["url"]:
             continue
         # wget decodes %-escapes when naming the saved file, so match that here.
         dest = os.path.join(outdir, unquote(os.path.basename(urlsplit(ep["url"]).path)))
         download(ep["url"], outdir, rate, verbose)
+        if not ep["chapters"]:
+            print(f"no chapters in feed, skipped embedding -> {dest}")
+            continue
         embed(dest, ep)
         print(f"embedded {len(ep['chapters'])} chapters -> {dest}")
 
